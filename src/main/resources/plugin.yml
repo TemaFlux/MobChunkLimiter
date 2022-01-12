@@ -1,0 +1,9 @@
+name: MobChunkLimiter
+main: me.temaflux.mobchunklimiter.MobChunkLimiterPlugin
+version: 1.0.0-SNAPSHOT
+description: "Ограничение существ в чанке"
+author: TemaFlux
+api-version: 1.13
+commands:
+  mobchunklimiter:
+    aliases: [mcl]
