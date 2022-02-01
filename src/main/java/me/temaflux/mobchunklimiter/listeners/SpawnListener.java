@@ -49,6 +49,14 @@ implements Listener {
 	
 	@EventHandler
 	public void onSpawn(EntitySpawnEvent e) {
+		if (setting("spawn.noai.enabled")) {
+			Entity entity = e.getEntity();
+			
+			if (entity instanceof LivingEntity && allowedType(entity)) {
+				((LivingEntity) entity).setAI(false);
+			}
+		}
+		
 		if (!allowedEvent(e) || !allowedSpawn(e)) return; // Ignore unallowed event or spawn
 		
 		final EntityType type = e.getEntityType();
@@ -63,14 +71,6 @@ implements Listener {
 		
 		if (sizeEntities(chunk, null) + 1 > maxSizeType(null))
 			e.setCancelled(true); // Ignore "current > global" entities
-		
-		if (!setting("spawn.noai.enabled")) return;
-		
-		Entity entity = e.getEntity();
-		
-		if (entity instanceof LivingEntity) {
-			((LivingEntity) entity).setAI(false);
-		}
 	}
 	
 	@EventHandler
