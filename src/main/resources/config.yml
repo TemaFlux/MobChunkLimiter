@@ -10,6 +10,9 @@ settings:
       global: -1 # Максимальное кол-во существ на чанк (игнорируется существа blacklist)
     blacklist: # Список существ на которые лимит не распространяется (https://hub.spigotmc.org/javadocs/spigot/org/bukkit/entity/EntityType.html)
     - "WANDERING_TRADER" # странствующий торговец
+    noai:
+      enabled: false # отключение интеллекта существам
+      radius: 8 # радиус отключение
 messages:
   command: "&aКонфигурация была перезагружена"
   permission: "&cУ вас не достаточно прав!"

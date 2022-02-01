@@ -1,12 +1,16 @@
 package me.temaflux.mobchunklimiter.listeners;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Stream;
 
 import org.bukkit.Chunk;
+import org.bukkit.World;
 import org.bukkit.configuration.Configuration;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntitySpawnEvent;
@@ -18,15 +22,27 @@ import me.temaflux.mobchunklimiter.MobChunkLimiterPlugin;
 
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
+import org.bukkit.event.player.PlayerMoveEvent;
 
 public class SpawnListener
 implements Listener {
 	private final MobChunkLimiterPlugin plugin;
+	private final List<Entity> AIEntities = new ArrayList<>();
 	
 	// Constructor
 	
 	public SpawnListener(MobChunkLimiterPlugin plugin) {
 		this.plugin = plugin;
+		
+		if (setting("spawn.noai.enabled")) {
+			for (World world : plugin.getServer().getWorlds()) {
+				for (Entity entity : world.getEntities()) {
+					if (entity instanceof LivingEntity) {
+						((LivingEntity) entity).setAI(false);
+					}
+				}
+			}
+		}
 	}
 	
 	// Events
@@ -47,6 +63,33 @@ implements Listener {
 		
 		if (sizeEntities(chunk, null) + 1 > maxSizeType(null))
 			e.setCancelled(true); // Ignore "current > global" entities
+		
+		if (!setting("spawn.noai.enabled")) return;
+		
+		Entity entity = e.getEntity();
+		
+		if (entity instanceof LivingEntity) {
+			((LivingEntity) entity).setAI(false);
+		}
+	}
+	
+	@EventHandler
+	public void onMove(PlayerMoveEvent e) {
+		if (!setting("spawn.noai.enabled")) return;
+		
+		double radius = config().getDouble("settings.spawn.noai.radius");
+		List<Entity> entities = e.getPlayer().getNearbyEntities(radius, radius, radius);
+		
+		new ArrayList<>(AIEntities).stream().filter(entity -> !entities.contains(entity)).forEach(entity -> {
+			AIEntities.remove(entity);
+			((LivingEntity) entity).setAI(false);
+		});
+		
+		entities.forEach(entity -> {
+			if (!allowedType(entity) || !(entity instanceof LivingEntity) || AIEntities.contains(entity)) return;
+			AIEntities.add(entity);
+			((LivingEntity) entity).setAI(true);
+		});
 	}
 	
 	// Actions
